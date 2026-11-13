@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music Mute — الشراء / Buy</title>
+<link rel="icon" href="/assets/icon128.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/"><img src="/assets/icon128.png" alt="">Music Mute</a>
+    <div class="links"><a href="/privacy" data-ar="الخصوصية" data-en="Privacy"></a><button class="lang" id="langBtn"></button></div>
+  </nav>
+
+  <h1 data-ar="النسخة الكاملة — مدى الحياة" data-en="Full version — lifetime"></h1>
+  <p class="muted" data-ar="ادفع مرة واحدة. بعد الدفع افتح الإضافة وسجّل دخول بنفس الإيميل وهتتفعّل تلقائي."
+     data-en="Pay once. Then open the extension, sign in with the same email, and it unlocks automatically."></p>
+
+  <div class="price">
+    <div class="card">
+      <div class="muted" data-ar="🇪🇬 من مصر" data-en="🇪🇬 In Egypt"></div>
+      <div class="amount"><span id="egp">100</span> <small data-ar="جنيه" data-en="EGP"></small></div>
+      <p data-ar="إنستاباي أو فودافون كاش — بيتفعّل بعد مراجعة التحويل (عادة خلال ساعات)." data-en="InstaPay or Vodafone Cash — activated after we check the transfer (usually within hours)."></p>
+      <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
+    </div>
+    <div class="card">
+      <div class="muted" data-ar="🌍 من برّه مصر" data-en="🌍 Outside Egypt"></div>
+      <div class="amount">$<span id="usd">2.99</span> <small>USD</small></div>
+      <p data-ar="بالكارت عن طريق Creem — بيتفعّل فورًا بعد الدفع." data-en="Card payment via Creem — unlocks instantly after payment."></p>
+      <a class="btn gold" id="usdBtn" style="margin-top:14px" target="_blank" rel="noopener" data-ar="ادفع بالدولار" data-en="Pay in USD"></a>
+      <p class="muted" style="font-size:13px;margin-top:10px" data-ar="⚠️ استخدم نفس الإيميل اللي هتسجّل بيه في الإضافة." data-en="⚠️ Use the same email you’ll sign in with in the extension."></p>
+    </div>
+  </div>
+
+  <!-- EGP manual flow -->
+  <div class="card hidden" id="egpFlow" style="margin-top:20px">
+    <h2 style="margin-top:0" data-ar="الدفع بالجنيه" data-en="Pay in EGP"></h2>
+    <div id="loginBox"></div>
+
+    <div id="payBox" class="hidden">
+      <p class="muted"><span data-ar="داخل بـ" data-en="Signed in as"></span> <b id="who" style="direction:ltr;display:inline-block"></b>
+        · <a href="#" id="signOut" data-ar="خروج" data-en="Sign out"></a></p>
+      <div id="licensedNote" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة»." data-en="✓ This email already has the full version. Open the extension and tap “Refresh status”."></div>
+
+      <ol class="steps">
+        <li><span data-ar="حوّل" data-en="Send"></span> <b id="egp2">100</b> <span data-ar="جنيه على واحد من دول:" data-en="EGP to one of:"></span>
+          <div class="pay-box" id="instaRow">InstaPay: <b id="insta"></b></div>
+          <div class="pay-box" id="vodaRow">Vodafone Cash: <b id="voda"></b></div>
+        </li>
+        <li data-ar="املا البيانات دي وارفع صورة إيصال التحويل." data-en="Fill in the details below and upload a screenshot of the receipt."></li>
+        <li data-ar="هنراجع ونفعّل — وبعدها حدّث الحالة من الإضافة." data-en="We confirm and activate — then refresh status in the extension."></li>
+      </ol>
+
+      <label data-ar="طريقة الدفع" data-en="Payment method"></label>
+      <select id="method"><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select>
+      <label data-ar="رقم العملية أو الرقم اللي حوّلت منه" data-en="Transaction ID or the number you paid from"></label>
+      <input id="ref" class="ltr" maxlength="120">
+      <label data-ar="صورة الإيصال (اختياري بس بيسرّع المراجعة)" data-en="Receipt screenshot (optional, speeds up review)"></label>
+      <input id="receipt" type="file" accept="image/png,image/jpeg,image/webp,application/pdf">
+      <button class="btn primary" id="submitPay" style="margin-top:14px" data-ar="ابعت للمراجعة" data-en="Submit for review"></button>
+      <div class="msg" id="payMsg"></div>
+
+      <h3 data-ar="طلباتك" data-en="Your submissions"></h3>
+      <table><thead><tr><th data-ar="التاريخ" data-en="Date"></th><th data-ar="الطريقة" data-en="Method"></th><th data-ar="المرجع" data-en="Reference"></th><th data-ar="الحالة" data-en="Status"></th></tr></thead>
+        <tbody id="mine"></tbody></table>
+    </div>
+  </div>
+
+  <footer><span>© Music Mute</span><span id="support"></span></footer>
+</div>
+
+<script type="module">
+import { sb, $, t, initLang, applyLang, msg, esc, getSettings, mountLogin } from '/assets/app.js';
+initLang();
+const params = new URLSearchParams(location.search);
+const presetEmail = params.get('email') || '';
+const S = await getSettings();
+$('#egp').textContent = $('#egp2').textContent = S.price_egp || '100';
+$('#usd').textContent = S.price_usd || '2.99';
+$('#insta').textContent = S.instapay_handle || '—'; if (!S.instapay_handle) $('#instaRow').classList.add('hidden');
+$('#voda').textContent = S.vodafone_cash_number || '—'; if (!S.vodafone_cash_number) $('#vodaRow').classList.add('hidden');
+if (S.support_email) $('#support').innerHTML = `<a href="mailto:${esc(S.support_email)}">${esc(S.support_email)}</a>`;
+if (S.creem_checkout_url) $('#usdBtn').href = S.creem_checkout_url;
+else { $('#usdBtn').removeAttribute('href'); $('#usdBtn').onclick = () => alert(t('الدفع بالدولار هيتفتح قريب', 'USD checkout is coming soon')); }
+
+const STATUS = { pending: ['قيد المراجعة', 'Pending'], approved: ['اتقبل ✓', 'Approved ✓'], rejected: ['مرفوض', 'Rejected'] };
+
+async function showSignedIn(session) {
+  $('#loginBox').classList.add('hidden'); $('#payBox').classList.remove('hidden');
+  $('#who').textContent = session.user.email;
+  const { data: lic } = await sb.rpc('my_license');
+  $('#licensedNote').classList.toggle('hidden', !(lic?.[0]?.active));
+  await loadMine();
+}
+async function loadMine() {
+  const { data } = await sb.from('payments').select('created_at,method,reference,status,admin_note').order('created_at', { ascending: false });
+  $('#mine').innerHTML = (data || []).map((p) => `<tr><td>${new Date(p.created_at).toLocaleString()}</td><td>${p.method === 'instapay' ? 'InstaPay' : 'Vodafone Cash'}</td>
+    <td style="direction:ltr">${esc(p.reference)}</td><td><span class="pill ${p.status}">${t(...STATUS[p.status])}</span>${p.admin_note ? `<div class="muted" style="font-size:12px">${esc(p.admin_note)}</div>` : ''}</td></tr>`).join('')
+    || `<tr><td colspan="4" class="muted">${t('لسه مفيش', 'Nothing yet')}</td></tr>`;
+}
+
+async function openEgp() {
+  $('#egpFlow').classList.remove('hidden');
+  $('#egpFlow').scrollIntoView({ behavior: 'smooth' });
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) return showSignedIn(session);
+  mountLogin($('#loginBox'), showSignedIn, presetEmail);
+}
+$('#egpBtn').onclick = openEgp;
+if (params.has('email') || location.hash === '#egp') {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session || location.hash === '#egp') openEgp();
+}
+
+$('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+
+$('#submitPay').onclick = async () => {
+  const m = $('#payMsg');
+  const ref = $('#ref').value.trim();
+  if (ref.length < 3) return msg(m, t('اكتب رقم العملية أو الرقم اللي حوّلت منه', 'Enter the transaction ID or the number you paid from'), 'err');
+  $('#submitPay').disabled = true; msg(m, t('بنبعت…', 'Submitting…'));
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    let receipt_path = null;
+    const f = $('#receipt').files[0];
+    if (f) {
+      if (f.size > 5 * 1024 * 1024) throw new Error(t('الصورة أكبر من 5 ميجا', 'File is over 5 MB'));
+      const ext = (f.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+      receipt_path = `${user.id}/${Date.now()}.${ext}`;
+      const up = await sb.storage.from('receipts').upload(receipt_path, f, { contentType: f.type });
+      if (up.error) throw up.error;
+    }
+    const { error } = await sb.from('payments').insert({
+      method: $('#method').value, amount_egp: Number(S.price_egp || 100), reference: ref, receipt_path, email: user.email
+    });
+    if (error) throw error;
+    msg(m, t('اتبعت ✓ هنراجعه ونفعّلك قريب.', 'Submitted ✓ We’ll review and activate you shortly.'), 'ok');
+    $('#ref').value = ''; $('#receipt').value = '';
+    await loadMine();
+  } catch (e) { msg(m, e.message || String(e), 'err'); }
+  $('#submitPay').disabled = false;
+};
+document.addEventListener('langchange', () => { if (!$('#payBox').classList.contains('hidden')) loadMine(); });
+</script>
+</body>
+</html>

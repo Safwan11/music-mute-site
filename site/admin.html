@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Music Mute — Admin</title>
+<link rel="icon" href="/assets/icon128.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/"><img src="/assets/icon128.png" alt="">Music Mute · Admin</a>
+    <div class="links"><a href="#" id="signOut" class="hidden" data-ar="خروج" data-en="Sign out"></a><button class="lang" id="langBtn"></button></div>
+  </nav>
+
+  <div class="card" id="loginCard" style="max-width:420px"><div id="loginBox"></div></div>
+  <div class="card hidden" id="denied" data-ar="الإيميل ده مش أدمن." data-en="This email is not an admin."></div>
+
+  <div id="panel" class="hidden">
+    <div class="stats">
+      <div class="card"><b id="sLic">0</b><span class="muted" data-ar="رخص فعّالة" data-en="Active licenses"></span></div>
+      <div class="card"><b id="sPend">0</b><span class="muted" data-ar="مستني مراجعة" data-en="Pending"></span></div>
+      <div class="card"><b id="sEgp">0</b><span class="muted" data-ar="جنيه متأكد" data-en="EGP approved"></span></div>
+      <div class="card"><b id="sCreem">0</b><span class="muted" data-ar="مبيعات Creem" data-en="Creem sales"></span></div>
+    </div>
+
+    <div class="tabs">
+      <button class="btn sm primary" data-tab="pending" data-ar="المراجعات" data-en="Review"></button>
+      <button class="btn sm ghost" data-tab="licenses" data-ar="الرخص" data-en="Licenses"></button>
+      <button class="btn sm ghost" data-tab="settings" data-ar="الإعدادات" data-en="Settings"></button>
+    </div>
+
+    <div class="card" data-pane="pending">
+      <table><thead><tr><th data-ar="الإيميل" data-en="Email"></th><th data-ar="الدفع" data-en="Payment"></th><th data-ar="الإيصال" data-en="Receipt"></th><th data-ar="الحالة" data-en="Status"></th><th></th></tr></thead>
+      <tbody id="payRows"></tbody></table>
+      <label><input type="checkbox" id="showAll" style="width:auto"> <span data-ar="اعرض الكل (مش بس المستني)" data-en="Show all (not only pending)"></span></label>
+    </div>
+
+    <div class="card hidden" data-pane="licenses">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+        <div style="flex:2;min-width:200px"><label data-ar="إيميل" data-en="Email"></label><input id="gEmail" class="ltr" type="email"></div>
+        <div style="flex:2;min-width:160px"><label data-ar="ملاحظة" data-en="Note"></label><input id="gNote"></div>
+        <button class="btn primary sm" id="grant" data-ar="فعّل" data-en="Grant"></button>
+        <button class="btn ghost sm" id="revoke" data-ar="الغي" data-en="Revoke"></button>
+      </div>
+      <div class="msg" id="gMsg"></div>
+      <table style="margin-top:12px"><thead><tr><th data-ar="الإيميل" data-en="Email"></th><th data-ar="المصدر" data-en="Source"></th><th data-ar="المرجع" data-en="Reference"></th><th data-ar="الحالة" data-en="Status"></th><th data-ar="التاريخ" data-en="Date"></th></tr></thead>
+      <tbody id="licRows"></tbody></table>
+    </div>
+
+    <div class="card hidden" data-pane="settings">
+      <div id="setForm"></div>
+      <button class="btn primary" id="saveSet" style="margin-top:14px" data-ar="حفظ" data-en="Save"></button>
+      <div class="msg" id="setMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { sb, $, $$, t, initLang, applyLang, msg, esc, mountLogin } from '/assets/app.js';
+initLang();
+
+async function start(session) {
+  const { error } = await sb.rpc('admin_stats');
+  if (error) { $('#loginCard').classList.add('hidden'); $('#denied').classList.remove('hidden'); $('#signOut').classList.remove('hidden'); return; }
+  $('#loginCard').classList.add('hidden'); $('#panel').classList.remove('hidden'); $('#signOut').classList.remove('hidden');
+  refresh();
+}
+const { data: { session } } = await sb.auth.getSession();
+if (session) start(session); else mountLogin($('#loginBox'), start);
+$('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+
+$$('[data-tab]').forEach((b) => b.onclick = () => {
+  $$('[data-tab]').forEach((x) => x.className = 'btn sm ' + (x === b ? 'primary' : 'ghost'));
+  $$('[data-pane]').forEach((p) => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+});
+
+async function refresh() { await Promise.all([loadStats(), loadPayments(), loadLicenses(), loadSettings()]); }
+
+async function loadStats() {
+  const { data } = await sb.rpc('admin_stats');
+  if (!data) return;
+  $('#sLic').textContent = data.licenses; $('#sPend').textContent = data.pending;
+  $('#sEgp').textContent = data.egp_approved; $('#sCreem').textContent = data.creem;
+}
+
+async function loadPayments() {
+  let q = sb.from('payments').select('*').order('created_at', { ascending: false }).limit(200);
+  if (!$('#showAll').checked) q = q.eq('status', 'pending');
+  const { data } = await q;
+  const rows = await Promise.all((data || []).map(async (p) => {
+    let rc = '—';
+    if (p.receipt_path) {
+      const { data: s } = await sb.storage.from('receipts').createSignedUrl(p.receipt_path, 3600);
+      if (s?.signedUrl) rc = `<a href="${s.signedUrl}" target="_blank" rel="noopener">${t('عرض', 'View')}</a>`;
+    }
+    const act = p.status === 'pending'
+      ? `<button class="btn sm primary" data-ok="${p.id}">${t('قبول', 'Approve')}</button> <button class="btn sm ghost" data-no="${p.id}">${t('رفض', 'Reject')}</button>`
+      : `<span class="muted" style="font-size:12px">${esc(p.reviewed_by || '')}</span>`;
+    return `<tr><td style="direction:ltr">${esc(p.email)}<div class="muted" style="font-size:12px">${new Date(p.created_at).toLocaleString()}</div></td>
+      <td>${p.amount_egp} EGP · ${p.method === 'instapay' ? 'InstaPay' : 'Vodafone Cash'}<div style="direction:ltr">${esc(p.reference)}</div></td>
+      <td>${rc}</td><td><span class="pill ${p.status}">${p.status}</span></td><td>${act}</td></tr>`;
+  }));
+  $('#payRows').innerHTML = rows.join('') || `<tr><td colspan="5" class="muted">${t('مفيش حاجة مستنية 🎉', 'Nothing pending 🎉')}</td></tr>`;
+  $$('[data-ok]').forEach((b) => b.onclick = async () => {
+    b.disabled = true; const { error } = await sb.rpc('approve_payment', { p_id: b.dataset.ok });
+    if (error) alert(error.message); refresh();
+  });
+  $$('[data-no]').forEach((b) => b.onclick = async () => {
+    const note = prompt(t('سبب الرفض (هيظهر للمشتري):', 'Reason (shown to the buyer):'), t('مش لاقيين التحويل', 'Transfer not found'));
+    if (note === null) return;
+    const { error } = await sb.rpc('reject_payment', { p_id: b.dataset.no, p_note: note });
+    if (error) alert(error.message); refresh();
+  });
+}
+$('#showAll').onchange = loadPayments;
+
+async function loadLicenses() {
+  const { data } = await sb.from('licenses').select('*').order('created_at', { ascending: false }).limit(500);
+  $('#licRows').innerHTML = (data || []).map((l) => `<tr><td style="direction:ltr">${esc(l.email)}</td><td>${l.source}</td><td style="direction:ltr">${esc(l.reference || '')}</td>
+    <td><span class="pill ${l.active ? 'approved' : 'rejected'}">${l.active ? 'active' : 'revoked'}</span></td><td>${new Date(l.created_at).toLocaleDateString()}</td></tr>`).join('');
+}
+async function setLic(active) {
+  const email = $('#gEmail').value.trim();
+  if (!email) return;
+  const { error } = await sb.rpc('set_license', { p_email: email, p_active: active, p_note: $('#gNote').value || null });
+  msg($('#gMsg'), error ? error.message : t('تم ✓', 'Done ✓'), error ? 'err' : 'ok');
+  refresh();
+}
+$('#grant').onclick = () => setLic(true);
+$('#revoke').onclick = () => setLic(false);
+
+const SET_LABELS = {
+  price_egp: ['السعر بالجنيه', 'Price (EGP)'], price_usd: ['السعر بالدولار (للعرض بس — السعر الحقيقي في Creem)', 'Price USD (display only — real price is in Creem)'],
+  instapay_handle: ['حساب إنستاباي (مثلاً name@instapay)', 'InstaPay address (e.g. name@instapay)'],
+  vodafone_cash_number: ['رقم فودافون كاش', 'Vodafone Cash number'],
+  creem_checkout_url: ['رابط الدفع من Creem', 'Creem checkout link'], support_email: ['إيميل الدعم', 'Support email']
+};
+async function loadSettings() {
+  const { data } = await sb.from('settings').select('*');
+  const map = Object.fromEntries((data || []).map((r) => [r.key, r.value]));
+  $('#setForm').innerHTML = Object.keys(SET_LABELS).map((k) =>
+    `<label>${t(...SET_LABELS[k])}</label><input class="ltr" data-key="${k}" value="${esc(map[k] ?? '')}">`).join('');
+}
+$('#saveSet').onclick = async () => {
+  let err = null;
+  for (const el of $$('[data-key]')) {
+    const { error } = await sb.from('settings').update({ value: el.value.trim() }).eq('key', el.dataset.key);
+    if (error) err = error;
+  }
+  msg($('#setMsg'), err ? err.message : t('اتحفظ ✓', 'Saved ✓'), err ? 'err' : 'ok');
+};
+document.addEventListener('langchange', () => { if (!$('#panel').classList.contains('hidden')) refresh(); });
+</script>
+</body>
+</html>

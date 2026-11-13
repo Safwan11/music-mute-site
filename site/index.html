@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music Mute — شيل المزيكا وسيب الكلام</title>
+<meta name="description" content="Chrome extension that removes background music from any tab in real time and keeps only human voices.">
+<link rel="icon" href="/assets/icon128.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/"><img src="/assets/icon128.png" alt="">Music Mute</a>
+    <div class="links">
+      <a href="/buy" data-ar="الأسعار" data-en="Pricing"></a>
+      <a href="/privacy" data-ar="الخصوصية" data-en="Privacy"></a>
+      <button class="lang" id="langBtn"></button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1 data-ar="شيل <span>المزيكا</span> من أي فيديو<br>وسيب الكلام بس" data-en="Remove the <span>music</span>.<br>Keep the voices."></h1>
+    <p data-ar="إضافة لكروم بتشيل المزيكا من أي تاب في نفس اللحظة — يوتيوب، دروس، بودكاست، أفلام — بذكاء اصطناعي شغال على جهازك من غير ما الصوت يطلع لأي سيرفر."
+       data-en="A Chrome extension that strips background music from any tab in real time — YouTube, lectures, podcasts, films — using an AI voice filter that runs entirely on your device."></p>
+    <a class="btn primary" id="getBtn" href="/buy" data-ar="جرّب ببلاش 3 أيام" data-en="Try free for 3 days"></a>
+    <a class="btn ghost" href="/buy" style="margin-inline-start:8px" data-ar="اشتري مدى الحياة" data-en="Buy lifetime"></a>
+  </section>
+
+  <div class="grid">
+    <div class="card"><div class="icon">🎧</div><h3 data-ar="ضغطة واحدة" data-en="One click"></h3><p data-ar="شغّلها على التاب أو دوس Alt + M." data-en="Turn it on for a tab, or press Alt + M."></p></div>
+    <div class="card"><div class="icon">🔒</div><h3 data-ar="على جهازك بس" data-en="On-device"></h3><p data-ar="الصوت بيتعالج جوه كروم. مفيش تسجيل ولا رفع." data-en="Audio is processed inside Chrome. Nothing is recorded or uploaded."></p></div>
+    <div class="card"><div class="icon">🎚️</div><h3 data-ar="3 مستويات" data-en="Three strengths"></h3><p data-ar="خفيف، متوازن، أو قوي — حسب الفيديو." data-en="Light, balanced or strong — pick what fits the video."></p></div>
+    <div class="card"><div class="icon">♾️</div><h3 data-ar="تدفع مرة واحدة" data-en="Pay once"></h3><p data-ar="100 جنيه في مصر أو $2.99 برّه — مدى الحياة." data-en="100 EGP in Egypt or $2.99 elsewhere — lifetime."></p></div>
+  </div>
+
+  <footer>
+    <span>© Music Mute</span>
+    <span><a href="/privacy" data-ar="سياسة الخصوصية" data-en="Privacy policy"></a> · <a href="/buy" data-ar="الشراء" data-en="Buy"></a></span>
+  </footer>
+</div>
+<script type="module">
+  import { initLang, CHROME_STORE_URL, $ } from '/assets/app.js';
+  initLang();
+  if (CHROME_STORE_URL) $('#getBtn').href = CHROME_STORE_URL;
+</script>
+</body>
+</html>
