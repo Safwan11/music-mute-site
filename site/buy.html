@@ -26,8 +26,8 @@
       <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
     </div>
     <div class="card">
-      <div class="muted" data-ar="🌍 من برّه مصر" data-en="🌍 Outside Egypt"></div>
-      <div class="amount">$<span id="usd">2.99</span> <small>USD</small></div>
+      <div class="muted" data-ar="🌍 لكل العالم" data-en="🌍 Worldwide"></div>
+      <div class="amount">$<span id="usd">9</span> <small>USD</small></div>
       <p data-ar="بالكارت عن طريق Creem — بيتفعّل فورًا بعد الدفع." data-en="Card payment via Creem — unlocks instantly after payment."></p>
       <a class="btn gold" id="usdBtn" style="margin-top:14px" target="_blank" rel="noopener" data-ar="ادفع بالدولار" data-en="Pay in USD"></a>
       <p class="muted" style="font-size:13px;margin-top:10px" data-ar="⚠️ استخدم نفس الإيميل اللي هتسجّل بيه في الإضافة." data-en="⚠️ Use the same email you’ll sign in with in the extension."></p>
@@ -78,7 +78,7 @@ const params = new URLSearchParams(location.search);
 const presetEmail = params.get('email') || '';
 const S = await getSettings();
 $('#egp').textContent = $('#egp2').textContent = S.price_egp || '100';
-$('#usd').textContent = S.price_usd || '2.99';
+$('#usd').textContent = S.price_usd || '9';
 $('#insta').textContent = S.instapay_handle || '—'; if (!S.instapay_handle) $('#instaRow').classList.add('hidden');
 $('#voda').textContent = S.vodafone_cash_number || '—'; if (!S.vodafone_cash_number) $('#vodaRow').classList.add('hidden');
 if (S.support_email) $('#support').innerHTML = `<a href="mailto:${esc(S.support_email)}">${esc(S.support_email)}</a>`;

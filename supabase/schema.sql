@@ -14,7 +14,7 @@ create table if not exists public.settings (
 );
 insert into public.settings (key, value) values
   ('price_egp', '100'),
-  ('price_usd', '2.99'),
+  ('price_usd', '9'),
   ('instapay_handle', ''),
   ('vodafone_cash_number', ''),
   ('creem_checkout_url', ''),
