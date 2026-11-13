@@ -4,3 +4,5 @@
   X-Frame-Options: DENY
 /admin*
   X-Robots-Tag: noindex
+/store-assets/*
+  Access-Control-Allow-Origin: *
