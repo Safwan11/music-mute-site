@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 export const SUPABASE_URL = 'https://xztvijjnjzpzwcwqduri.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_pZXY2-n1qFS2TwFkB4jS-w_-PGNpEOg';
-export const CHROME_STORE_URL = ''; // set after the store listing is approved
+export const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/ckkkmcpgbmajdiccclhijlhifhklofdn';
 export const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export const $ = (s, r = document) => r.querySelector(s);
