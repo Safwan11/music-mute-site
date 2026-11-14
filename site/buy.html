@@ -22,8 +22,15 @@
     <div class="card">
       <div class="muted" data-ar="🇪🇬 من مصر" data-en="🇪🇬 In Egypt"></div>
       <div class="amount"><span id="egp">100</span> <small data-ar="جنيه" data-en="EGP"></small></div>
-      <p data-ar="إنستاباي أو فودافون كاش — بيتفعّل بعد مراجعة التحويل (عادة خلال ساعات)." data-en="InstaPay or Vodafone Cash — activated after we check the transfer (usually within hours)."></p>
-      <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
+      <div id="ekOffer" class="hidden">
+        <p data-ar="فيزا، ماستركارد، ميزة، المحافظ (فودافون كاش وغيرها) أو فوري — <b>بيتفعّل فورًا</b> بعد الدفع." data-en="Visa, Mastercard, Meeza, mobile wallets (Vodafone Cash etc.) or Fawry — <b>unlocks instantly</b> after payment."></p>
+        <button class="btn primary" id="ekBtn" style="margin-top:14px" data-ar="ادفع بالكارت أو المحفظة" data-en="Pay by card or wallet"></button>
+        <p class="muted" style="font-size:13px;margin-top:10px"><a href="#" id="egpManualLink" data-ar="أو حوّل بإنستاباي (مراجعة يدوية)" data-en="or transfer by InstaPay (manual review)"></a></p>
+      </div>
+      <div id="manualOffer">
+        <p data-ar="إنستاباي أو فودافون كاش — بيتفعّل بعد مراجعة التحويل (عادة خلال ساعات)." data-en="InstaPay or Vodafone Cash — activated after we check the transfer (usually within hours)."></p>
+        <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
+      </div>
     </div>
     <div class="card">
       <div class="muted" data-ar="🌍 لكل العالم" data-en="🌍 Worldwide"></div>
@@ -31,6 +38,26 @@
       <p data-ar="بالكارت عن طريق Creem — بيتفعّل فورًا بعد الدفع." data-en="Card payment via Creem — unlocks instantly after payment."></p>
       <a class="btn gold" id="usdBtn" style="margin-top:14px" target="_blank" rel="noopener" data-ar="ادفع بالدولار" data-en="Pay in USD"></a>
       <p class="muted" style="font-size:13px;margin-top:10px" data-ar="⚠️ استخدم نفس الإيميل اللي هتسجّل بيه في الإضافة." data-en="⚠️ Use the same email you’ll sign in with in the extension."></p>
+    </div>
+  </div>
+
+  <!-- EGP instant flow (EasyKash) -->
+  <div class="card hidden" id="ekFlow" style="margin-top:20px">
+    <h2 style="margin-top:0" data-ar="الدفع بالكارت أو المحفظة" data-en="Pay by card or wallet"></h2>
+    <div id="ekLoginBox"></div>
+    <div id="ekPayBox" class="hidden">
+      <p class="muted"><span data-ar="الرخصة هتتفعّل على" data-en="The license will be activated for"></span> <b id="ekWho" style="direction:ltr;display:inline-block"></b>
+        · <a href="#" id="ekSignOut" data-ar="إيميل تاني؟" data-en="Different email?"></a></p>
+      <div id="ekLicensed" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده بالفعل. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة»." data-en="✓ This email already has the full version. Open the extension and tap “Refresh status”."></div>
+      <div id="ekForm">
+        <label data-ar="الاسم" data-en="Name"></label>
+        <input id="ekName" maxlength="80" autocomplete="name">
+        <label data-ar="رقم الموبايل (مطلوب لصفحة الدفع)" data-en="Mobile number (required by the payment page)"></label>
+        <input id="ekMobile" class="ltr" inputmode="tel" maxlength="11" placeholder="01xxxxxxxxx" autocomplete="tel">
+        <button class="btn primary" id="ekPay" style="margin-top:14px;width:100%"><span data-ar="ادفع" data-en="Pay"></span> <span id="ekAmt">100</span> <span data-ar="جنيه" data-en="EGP"></span></button>
+        <p class="muted" style="font-size:13px;margin-top:10px" data-ar="🔒 الدفع بيتم على صفحة EasyKash الآمنة. إحنا مش بنشوف بيانات الكارت." data-en="🔒 You pay on EasyKash’s secure page. We never see your card details."></p>
+      </div>
+      <div class="msg" id="ekMsg"></div>
     </div>
   </div>
 
@@ -115,6 +142,57 @@ if (params.has('email') || location.hash === '#egp') {
 }
 
 $('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+
+// ---------- EasyKash (instant EGP) ----------
+const ekOn = S.easykash_enabled === 'true';
+if (ekOn) { $('#ekOffer').classList.remove('hidden'); $('#manualOffer').classList.add('hidden'); }
+$('#ekAmt').textContent = S.price_egp || '100';
+$('#egpManualLink').onclick = (e) => { e.preventDefault(); $('#ekFlow').classList.add('hidden'); openEgp(); };
+
+async function ekSignedIn(session) {
+  $('#ekLoginBox').classList.add('hidden'); $('#ekPayBox').classList.remove('hidden');
+  $('#ekWho').textContent = session.user.email;
+  const { data: lic } = await sb.rpc('my_license');
+  const has = !!lic?.[0]?.active;
+  $('#ekLicensed').classList.toggle('hidden', !has);
+  $('#ekForm').classList.toggle('hidden', has);
+  $('#ekMobile').value = localStorage.getItem('mm-mobile') || '';
+  $('#ekName').value = localStorage.getItem('mm-name') || '';
+}
+async function openEk() {
+  $('#egpFlow').classList.add('hidden');
+  $('#ekFlow').classList.remove('hidden');
+  $('#ekFlow').scrollIntoView({ behavior: 'smooth' });
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) return ekSignedIn(session);
+  $('#ekLoginBox').classList.remove('hidden');
+  mountLogin($('#ekLoginBox'), ekSignedIn, presetEmail);
+}
+$('#ekBtn').onclick = openEk;
+$('#ekSignOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); $('#ekPayBox').classList.add('hidden'); openEk(); };
+if (ekOn && location.hash === '#card') openEk();
+
+$('#ekPay').onclick = async () => {
+  const m = $('#ekMsg');
+  const mobile = $('#ekMobile').value.replace(/\D/g, '');
+  const name = $('#ekName').value.trim();
+  if (!/^01[0125]\d{8}$/.test(mobile)) return msg(m, t('اكتب رقم موبايل مصري صحيح (11 رقم)', 'Enter a valid Egyptian mobile number (11 digits)'), 'err');
+  localStorage.setItem('mm-mobile', mobile); localStorage.setItem('mm-name', name);
+  $('#ekPay').disabled = true; msg(m, t('بنجهّز صفحة الدفع…', 'Opening the payment page…'));
+  try {
+    const { data, error } = await sb.functions.invoke('easykash-checkout', { body: { name, mobile } });
+    if (error) {
+      let detail = '';
+      try { detail = (await error.context.json()).error; } catch {}
+      if (detail === 'already_licensed') { $('#ekLicensed').classList.remove('hidden'); $('#ekForm').classList.add('hidden'); msg(m, ''); return; }
+      throw new Error(detail || error.message);
+    }
+    location.href = data.url;
+  } catch (e) {
+    msg(m, (e.message || String(e)) + t(' — جرّب تاني أو استخدم إنستاباي.', ' — try again or use InstaPay.'), 'err');
+    $('#ekPay').disabled = false;
+  }
+};
 
 $('#submitPay').onclick = async () => {
   const m = $('#payMsg');

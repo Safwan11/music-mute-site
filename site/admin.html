@@ -83,7 +83,7 @@ async function loadStats() {
   const { data } = await sb.rpc('admin_stats');
   if (!data) return;
   $('#sLic').textContent = data.licenses; $('#sPend').textContent = data.pending;
-  $('#sEgp').textContent = data.egp_approved; $('#sCreem').textContent = data.creem;
+  $('#sEgp').textContent = data.egp_approved; $('#sCreem').textContent = data.creem + (data.easykash ? ` + EasyKash ${data.easykash}` : '');
 }
 
 async function loadPayments() {
@@ -136,7 +136,7 @@ const SET_LABELS = {
   price_egp: ['السعر بالجنيه', 'Price (EGP)'], price_usd: ['السعر بالدولار (للعرض بس — السعر الحقيقي في Creem)', 'Price USD (display only — real price is in Creem)'],
   instapay_handle: ['حساب إنستاباي (مثلاً name@instapay)', 'InstaPay address (e.g. name@instapay)'],
   vodafone_cash_number: ['رقم فودافون كاش', 'Vodafone Cash number'],
-  creem_checkout_url: ['رابط الدفع من Creem', 'Creem checkout link'], support_email: ['إيميل الدعم', 'Support email']
+  creem_checkout_url: ['رابط الدفع من Creem', 'Creem checkout link'], easykash_enabled: ['تشغيل الدفع بالكارت EasyKash (true/false)', 'EasyKash card payments on (true/false)'], support_email: ['إيميل الدعم', 'Support email']
 };
 async function loadSettings() {
   const { data } = await sb.from('settings').select('*');
