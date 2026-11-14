@@ -13,9 +13,10 @@ insert into public.settings (key, value) values ('easykash_enabled', 'false')
 on conflict (key) do nothing;
 
 -- One row per checkout attempt. Created only by the easykash-checkout edge function.
+create sequence if not exists public.easykash_order_seq start 1001;
 create table if not exists public.easykash_orders (
   id bigint generated always as identity primary key,
-  ref text generated always as ('MM' || id::text) stored unique,   -- sent to EasyKash as customerReference
+  ref text not null unique default ('MM' || nextval('public.easykash_order_seq')::text),  -- sent to EasyKash as customerReference
   user_id uuid references auth.users(id) on delete set null,
   email text not null check (email = lower(email)),
   name text,
