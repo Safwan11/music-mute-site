@@ -10,3 +10,16 @@
 - Turn EasyKash on: /admin → Settings → `easykash_enabled` = `true`.
 
 Only the public publishable key is in the site/extension. All rules are enforced by RLS + RPCs.
+
+## PayTabs Egypt (automatic EGP card payments)
+
+Freelancer account: only national ID + bank statement (no commercial register / tax card).
+
+1. Run `supabase/paytabs.sql` in the SQL editor.
+2. Deploy 3 edge functions with **Verify JWT OFF**: `paytabs-checkout`, `paytabs-callback`, `paytabs-return`.
+3. Secrets: `PAYTABS_PROFILE_ID`, `PAYTABS_SERVER_KEY` (PayTabs dashboard → Developers → Key management).
+   Test keys work right after sign-up; swap to live keys once the account is approved.
+4. `/admin` → `paytabs_enabled = true`. If both PayTabs and EasyKash are on, PayTabs is used.
+
+The checkout sends the callback/return URLs itself — nothing to set in the PayTabs dashboard.
+Callback is verified with HMAC-SHA256 (header `signature`) over the raw body; license goes to the signed-in email on the order.

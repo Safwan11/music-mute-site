@@ -28,9 +28,9 @@ import { sb, initLang, applyLang, getSettings, esc, t, $, msg } from '/assets/ap
 initLang();
 const S = await getSettings();
 
-// EasyKash returns ?provider=easykash&status=success|pending|failed&voucher=...
+// EasyKash / PayTabs (via paytabs-return) land here with ?provider=...&status=success|pending|failed
 const q = new URLSearchParams(location.search);
-if (q.get('provider') === 'easykash') {
+if (['easykash', 'paytabs'].includes(q.get('provider'))) {
   const st = (q.get('status') || '').toLowerCase();
   const set = (icon, ar, en, subAr, subEn) => {
     $('#icon').textContent = icon;

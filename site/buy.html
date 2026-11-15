@@ -23,7 +23,7 @@
       <div class="muted" data-ar="🇪🇬 من مصر" data-en="🇪🇬 In Egypt"></div>
       <div class="amount"><span id="egp">100</span> <small data-ar="جنيه" data-en="EGP"></small></div>
       <div id="ekOffer" class="hidden">
-        <p data-ar="فيزا، ماستركارد، ميزة، المحافظ (فودافون كاش وغيرها) أو فوري — <b>بيتفعّل فورًا</b> بعد الدفع." data-en="Visa, Mastercard, Meeza, mobile wallets (Vodafone Cash etc.) or Fawry — <b>unlocks instantly</b> after payment."></p>
+        <p id="ekOfferText" data-ar="فيزا، ماستركارد، ميزة، المحافظ (فودافون كاش وغيرها) أو فوري — <b>بيتفعّل فورًا</b> بعد الدفع." data-en="Visa, Mastercard, Meeza, mobile wallets (Vodafone Cash etc.) or Fawry — <b>unlocks instantly</b> after payment."></p>
         <button class="btn primary" id="ekBtn" style="margin-top:14px" data-ar="ادفع بالكارت أو المحفظة" data-en="Pay by card or wallet"></button>
         <p class="muted" style="font-size:13px;margin-top:10px"><a href="#" id="egpManualLink" data-ar="أو حوّل بإنستاباي (مراجعة يدوية)" data-en="or transfer by InstaPay (manual review)"></a></p>
       </div>
@@ -55,7 +55,7 @@
         <label data-ar="رقم الموبايل (مطلوب لصفحة الدفع)" data-en="Mobile number (required by the payment page)"></label>
         <input id="ekMobile" class="ltr" inputmode="tel" maxlength="11" placeholder="01xxxxxxxxx" autocomplete="tel">
         <button class="btn primary" id="ekPay" style="margin-top:14px;width:100%"><span data-ar="ادفع" data-en="Pay"></span> <span id="ekAmt">100</span> <span data-ar="جنيه" data-en="EGP"></span></button>
-        <p class="muted" style="font-size:13px;margin-top:10px" data-ar="🔒 الدفع بيتم على صفحة EasyKash الآمنة. إحنا مش بنشوف بيانات الكارت." data-en="🔒 You pay on EasyKash’s secure page. We never see your card details."></p>
+        <p class="muted" id="ekSecure" style="font-size:13px;margin-top:10px" data-ar="🔒 الدفع بيتم على صفحة EasyKash الآمنة. إحنا مش بنشوف بيانات الكارت." data-en="🔒 You pay on EasyKash’s secure page. We never see your card details."></p>
       </div>
       <div class="msg" id="ekMsg"></div>
     </div>
@@ -143,8 +143,18 @@ if (params.has('email') || location.hash === '#egp') {
 
 $('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
 
-// ---------- EasyKash (instant EGP) ----------
-const ekOn = S.easykash_enabled === 'true';
+// ---------- Instant EGP by card (PayTabs or EasyKash) ----------
+// Card provider: PayTabs wins if both are on.
+const cardFn = S.paytabs_enabled === 'true' ? 'paytabs-checkout' : S.easykash_enabled === 'true' ? 'easykash-checkout' : null;
+const ekOn = !!cardFn;
+if (cardFn === 'paytabs-checkout') {
+  $('#ekOfferText').dataset.ar = 'فيزا، ماستركارد أو ميزة — <b>بيتفعّل فورًا</b> بعد الدفع.';
+  $('#ekOfferText').dataset.en = 'Visa, Mastercard or Meeza — <b>unlocks instantly</b> after payment.';
+  $('#ekBtn').dataset.ar = 'ادفع بالكارت'; $('#ekBtn').dataset.en = 'Pay by card';
+  $('#ekSecure').dataset.ar = '🔒 الدفع بيتم على صفحة PayTabs الآمنة. إحنا مش بنشوف بيانات الكارت.';
+  $('#ekSecure').dataset.en = '🔒 You pay on PayTabs’ secure page. We never see your card details.';
+  applyLang();
+}
 if (ekOn) { $('#ekOffer').classList.remove('hidden'); $('#manualOffer').classList.add('hidden'); }
 $('#ekAmt').textContent = S.price_egp || '100';
 $('#egpManualLink').onclick = (e) => { e.preventDefault(); $('#ekFlow').classList.add('hidden'); openEgp(); };
@@ -180,7 +190,7 @@ $('#ekPay').onclick = async () => {
   localStorage.setItem('mm-mobile', mobile); localStorage.setItem('mm-name', name);
   $('#ekPay').disabled = true; msg(m, t('بنجهّز صفحة الدفع…', 'Opening the payment page…'));
   try {
-    const { data, error } = await sb.functions.invoke('easykash-checkout', { body: { name, mobile } });
+    const { data, error } = await sb.functions.invoke(cardFn, { body: { name, mobile } });
     if (error) {
       let detail = '';
       try { detail = (await error.context.json()).error; } catch {}
