@@ -250,7 +250,7 @@ export default {
   legal: {
     updated: 'Last updated: 14 November 2026',
     privacy: { title: 'Privacy Policy', metaDesc: 'How Muslim Tech collects, uses and protects personal information.', body: [
-      ['Who we are', 'This policy explains how Muslim Tech (“we”, “us”) handles personal information collected through this website. Contact: muslimtech@gmail.com.'],
+      ['Who we are', 'This policy explains how Muslim Tech (“we”, “us”) handles personal information collected through this website. Contact: muslimtecheg@gmail.com.'],
       ['Information we collect', 'When you submit the contact form we collect your name, company, business email, country, optional phone number, the service and project details you describe, optional budget and start date, and any file you attach. When you apply through the careers page we collect your name, email, country, area of expertise, LinkedIn profile, CV and introduction. We also process basic technical data such as your IP address to protect the forms from abuse.'],
       ['How we use information', 'We use this information only to respond to your inquiry or application, prepare proposals, communicate with you and protect our website from spam and misuse. We do not sell personal information and we do not use it for unrelated marketing.'],
       ['Email communications', 'We send you an automatic confirmation when you submit a form and reply to you by email. You can ask us to stop contacting you at any time.'],
@@ -258,7 +258,7 @@ export default {
       ['Third-party services', 'We use trusted providers to run this website: Cloudflare (hosting and security), Supabase (secure database and file storage) and Google (Gmail, for email delivery). They process data on our behalf under their own security and privacy commitments.'],
       ['Data retention', 'We keep inquiries and applications only as long as needed to respond and for reasonable business records, normally no longer than 24 months, unless a business relationship requires longer retention. You can ask us to delete your data sooner.'],
       ['Data protection', 'Data is transmitted over HTTPS and stored with access controls. No method of transmission or storage is completely secure, but we take reasonable measures to protect your information.'],
-      ['Your rights', 'Depending on where you live (for example under the GDPR or similar laws), you may have the right to access, correct, delete or restrict the use of your personal data, and to object to processing. To exercise these rights, email muslimtech@gmail.com.'],
+      ['Your rights', 'Depending on where you live (for example under the GDPR or similar laws), you may have the right to access, correct, delete or restrict the use of your personal data, and to object to processing. To exercise these rights, email muslimtecheg@gmail.com.'],
       ['Changes', 'We may update this policy. The latest version is always available on this page with its update date.'],
     ] },
     terms: { title: 'Terms & Conditions', metaDesc: 'Terms for using the Muslim Tech website and requesting services.', body: [
@@ -270,7 +270,7 @@ export default {
       ['Confidentiality', 'We treat information shared about your products and business as confidential. A separate non-disclosure agreement can be signed on request.'],
       ['Limitation of liability', 'Website content is provided for general information. To the extent permitted by law, Muslim Tech is not liable for indirect or consequential losses arising from use of this website. Liability for services is governed by the service agreement.'],
       ['Third-party integrations', 'This website relies on third-party services such as Cloudflare, Supabase and Google. We are not responsible for their availability or for third-party websites linked from this site.'],
-      ['General', 'If any part of these terms is found unenforceable, the rest remains in effect. Questions: muslimtech@gmail.com.'],
+      ['General', 'If any part of these terms is found unenforceable, the rest remains in effect. Questions: muslimtecheg@gmail.com.'],
     ] },
     cookies: { title: 'Cookie Policy', metaDesc: 'How Muslim Tech uses cookies and similar technologies.', body: [
       ['Our approach', 'We keep this website simple and privacy-friendly. We do not use advertising or marketing cookies and we do not install third-party tracking scripts.'],

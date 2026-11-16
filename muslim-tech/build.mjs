@@ -6,7 +6,7 @@ import ar from './content/ar.mjs';
 
 const SITE = process.env.SITE_URL || 'https://muslim-tech.pages.dev';
 const ENDPOINT = process.env.FORM_ENDPOINT || 'https://xztvijjnjzpzwcwqduri.supabase.co/functions/v1/mt-submit';
-const EMAIL = 'muslimtech@gmail.com';
+const EMAIL = 'muslimtecheg@gmail.com';
 const OUT = path.resolve('dist');
 const YEAR = new Date().getFullYear();
 

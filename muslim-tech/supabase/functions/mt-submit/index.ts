@@ -1,7 +1,7 @@
 // Muslim Tech — website form handler (contact inquiries + careers applications).
 // Validates, rate-limits, stores the submission and file, then emails the
 // company inbox and sends the visitor an acknowledgment.
-// Secrets: GMAIL_USER, GMAIL_APP_PASSWORD (optional NOTIFY_TO, default muslimtech@gmail.com).
+// Secrets: GMAIL_USER, GMAIL_APP_PASSWORD (optional NOTIFY_TO, default muslimtecheg@gmail.com).
 // SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are injected by Supabase. Deploy with Verify JWT OFF.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
 
   // Email (best effort — the submission is already stored)
   const user = Deno.env.get("GMAIL_USER"), pass = Deno.env.get("GMAIL_APP_PASSWORD");
-  const to = Deno.env.get("NOTIFY_TO") || "muslimtech@gmail.com";
+  const to = Deno.env.get("NOTIFY_TO") || "muslimtecheg@gmail.com";
   let email_status = "not_configured";
   if (user && pass) {
     const smtp = new SMTPClient({ connection: { hostname: "smtp.gmail.com", port: 465, tls: true, auth: { username: user, password: pass } } });

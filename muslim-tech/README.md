@@ -4,7 +4,7 @@ Bilingual (English / Arabic) static website for Muslim Tech: software QA & testi
 
 - **Live:** https://muslim-tech.pages.dev (Cloudflare Pages)
 - **English:** `/` · **Arabic (RTL):** `/ar/`
-- **Forms:** contact inquiries and careers applications → Supabase Edge Function `mt-submit` → email to **muslimtech@gmail.com** + automatic acknowledgment to the sender.
+- **Forms:** contact inquiries and careers applications → Supabase Edge Function `mt-submit` → email to **muslimtecheg@gmail.com** + automatic acknowledgment to the sender.
 
 ## Structure
 
@@ -29,10 +29,10 @@ Change the site URL or form endpoint with env vars `SITE_URL` and `FORM_ENDPOINT
 
 No credentials are in this repository or the website. Email is sent server-side by the Edge Function.
 
-1. Turn on 2-Step Verification for **muslimtech@gmail.com**.
+1. Turn on 2-Step Verification for **muslimtecheg@gmail.com**.
 2. Create an App Password: https://myaccount.google.com/apppasswords (name it "Muslim Tech website").
 3. In Supabase → Edge Functions → Secrets (project `xztvijjnjzpzwcwqduri`), add:
-   - `GMAIL_USER` = `muslimtech@gmail.com`
+   - `GMAIL_USER` = `muslimtecheg@gmail.com`
    - `GMAIL_APP_PASSWORD` = the 16-character App Password
    - optional `NOTIFY_TO` = a different inbox for notifications
 4. Submit a test inquiry from the Contact page. You should receive the inquiry (with any attachment) and the sender gets a confirmation.
