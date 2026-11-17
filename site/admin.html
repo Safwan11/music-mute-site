@@ -23,7 +23,7 @@
       <div class="card"><b id="sLic">0</b><span class="muted" data-ar="رخص فعّالة" data-en="Active licenses"></span></div>
       <div class="card"><b id="sPend">0</b><span class="muted" data-ar="مستني مراجعة" data-en="Pending"></span></div>
       <div class="card"><b id="sEgp">0</b><span class="muted" data-ar="جنيه متأكد" data-en="EGP approved"></span></div>
-      <div class="card"><b id="sCreem">0</b><span class="muted" data-ar="مبيعات Creem" data-en="Creem sales"></span></div>
+      <div class="card"><b id="sCreem">0</b><span class="muted" data-ar="مبيعات بالدولار" data-en="USD sales"></span></div>
     </div>
 
     <div class="tabs">
@@ -133,10 +133,10 @@ $('#grant').onclick = () => setLic(true);
 $('#revoke').onclick = () => setLic(false);
 
 const SET_LABELS = {
-  price_egp: ['السعر بالجنيه', 'Price (EGP)'], price_usd: ['السعر بالدولار (للعرض بس — السعر الحقيقي في Creem)', 'Price USD (display only — real price is in Creem)'],
+  price_egp: ['السعر بالجنيه', 'Price (EGP)'], price_usd: ['السعر بالدولار (للعرض بس — السعر الحقيقي في Gumroad)', 'Price USD (display only — real price is in Gumroad)'],
   instapay_handle: ['حساب إنستاباي (مثلاً name@instapay)', 'InstaPay address (e.g. name@instapay)'],
   vodafone_cash_number: ['رقم فودافون كاش', 'Vodafone Cash number'],
-  creem_checkout_url: ['رابط الدفع من Creem', 'Creem checkout link'], easykash_enabled: ['تشغيل الدفع بالكارت EasyKash (true/false)', 'EasyKash card payments on (true/false)'], paytabs_enabled: ['تشغيل الدفع بالكارت PayTabs (true/false)', 'PayTabs card payments on (true/false)'], support_email: ['إيميل الدعم', 'Support email']
+  creem_checkout_url: ['رابط الدفع بالدولار (Gumroad)', 'USD checkout link (Gumroad)'], easykash_enabled: ['تشغيل الدفع بالكارت EasyKash (true/false)', 'EasyKash card payments on (true/false)'], paytabs_enabled: ['تشغيل الدفع بالكارت PayTabs (true/false)', 'PayTabs card payments on (true/false)'], support_email: ['إيميل الدعم', 'Support email']
 };
 async function loadSettings() {
   const { data } = await sb.from('settings').select('*');
