@@ -23,3 +23,12 @@ Freelancer account: only national ID + bank statement (no commercial register / 
 
 The checkout sends the callback/return URLs itself — nothing to set in the PayTabs dashboard.
 Callback is verified with HMAC-SHA256 (header `signature`) over the raw body; license goes to the signed-in email on the order.
+
+## Automatic InstaPay / Vodafone Cash (no screenshots)
+
+1. Run `supabase/wallet.sql`.
+2. Deploy `wallet-sms` (Verify JWT OFF). Secrets: `WALLET_SMS_TOKEN` (long random), optional `WALLET_SMS_SENDERS`.
+3. On the phone that receives the wallet/bank SMS, install an "SMS to URL" forwarder and point it to
+   `https://xztvijjnjzpzwcwqduri.supabase.co/functions/v1/wallet-sms?key=<WALLET_SMS_TOKEN>` (POST JSON `{"from","text"}`).
+4. Buyer gets a unique amount (e.g. 100.37) on /buy, pays it, and the SMS unlocks the license automatically.
+   Unmatched credits are logged in `audit_log` (action `unmatched_credit`); receipts upload stays as a fallback.

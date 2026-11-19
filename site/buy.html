@@ -25,10 +25,10 @@
       <div id="ekOffer" class="hidden">
         <p id="ekOfferText" data-ar="فيزا، ماستركارد، ميزة، المحافظ (فودافون كاش وغيرها) أو فوري — <b>بيتفعّل فورًا</b> بعد الدفع." data-en="Visa, Mastercard, Meeza, mobile wallets (Vodafone Cash etc.) or Fawry — <b>unlocks instantly</b> after payment."></p>
         <button class="btn primary" id="ekBtn" style="margin-top:14px" data-ar="ادفع بالكارت أو المحفظة" data-en="Pay by card or wallet"></button>
-        <p class="muted" style="font-size:13px;margin-top:10px"><a href="#" id="egpManualLink" data-ar="أو حوّل بإنستاباي (مراجعة يدوية)" data-en="or transfer by InstaPay (manual review)"></a></p>
+        <p class="muted" style="font-size:13px;margin-top:10px"><a href="#" id="egpManualLink" data-ar="أو حوّل بإنستاباي / فودافون كاش" data-en="or transfer by InstaPay / Vodafone Cash"></a></p>
       </div>
       <div id="manualOffer">
-        <p data-ar="إنستاباي أو فودافون كاش — بيتفعّل بعد مراجعة التحويل (عادة خلال ساعات)." data-en="InstaPay or Vodafone Cash — activated after we check the transfer (usually within hours)."></p>
+        <p data-ar="إنستاباي أو فودافون كاش — <b>بيتفعّل لوحده</b> خلال دقيقة من وصول التحويل." data-en="InstaPay or Vodafone Cash — <b>unlocks automatically</b> within a minute of your transfer arriving."></p>
         <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
       </div>
     </div>
@@ -71,23 +71,41 @@
         · <a href="#" id="signOut" data-ar="خروج" data-en="Sign out"></a></p>
       <div id="licensedNote" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة»." data-en="✓ This email already has the full version. Open the extension and tap “Refresh status”."></div>
 
-      <ol class="steps">
-        <li><span data-ar="حوّل" data-en="Send"></span> <b id="egp2">100</b> <span data-ar="جنيه على واحد من دول:" data-en="EGP to one of:"></span>
-          <div class="pay-box" id="instaRow">InstaPay: <b id="insta"></b></div>
-          <div class="pay-box" id="vodaRow">Vodafone Cash: <b id="voda"></b></div>
-        </li>
-        <li data-ar="املا البيانات دي وارفع صورة إيصال التحويل." data-en="Fill in the details below and upload a screenshot of the receipt."></li>
-        <li data-ar="هنراجع ونفعّل — وبعدها حدّث الحالة من الإضافة." data-en="We confirm and activate — then refresh status in the extension."></li>
-      </ol>
+      <div id="autoBox">
+        <ol class="steps">
+          <li data-ar="اختار هتدفع منين واكتب الرقم اللي هتحوّل منه." data-en="Choose how you’ll pay and enter the number you’ll pay from."></li>
+          <li data-ar="هنديك مبلغ مخصوص ليك (زي 100.37) — حوّله بالظبط." data-en="We give you a unique amount (like 100.37) — send exactly that."></li>
+          <li data-ar="أول ما الفلوس توصل، النسخة الكاملة بتتفعّل لوحدها خلال دقيقة." data-en="As soon as the money arrives, the full version unlocks by itself within a minute."></li>
+        </ol>
+        <label data-ar="هتدفع بـ" data-en="Pay with"></label>
+        <select id="aMethod"><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select>
+        <label data-ar="الرقم اللي هتحوّل منه (11 رقم)" data-en="The number you’ll pay from (11 digits)"></label>
+        <input id="aPhone" class="ltr" inputmode="numeric" maxlength="13" placeholder="01xxxxxxxxx">
+        <button class="btn primary" id="aStart" style="margin-top:14px" data-ar="اعرف المبلغ" data-en="Get my amount"></button>
+        <div class="msg" id="aMsg"></div>
 
+        <div id="aPay" class="hidden" style="margin-top:16px">
+          <div class="pay-box" style="text-align:center">
+            <div data-ar="حوّل بالظبط" data-en="Send exactly"></div>
+            <div style="font-size:40px;font-weight:800;direction:ltr" id="aAmount"></div>
+            <div><span data-ar="جنيه على" data-en="EGP to"></span> <b style="direction:ltr;display:inline-block;font-size:20px" id="aTo"></b></div>
+            <div class="muted" style="font-size:13px;margin-top:6px" data-ar="InstaPay أو Vodafone Cash — نفس الرقم. لازم القروش تبقى زي ما هي عشان نعرف إنه إنت." data-en="InstaPay or Vodafone Cash — same number. Keep the piasters exact so we know it’s you."></div>
+          </div>
+          <div class="msg" id="aWait"></div>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:14px"><a href="#" id="showManual" data-ar="حوّلت ومتفعّلش بعد 15 دقيقة؟ ابعت الإيصال هنا" data-en="Paid but not unlocked after 15 minutes? Send your receipt here"></a></p>
+      </div>
+
+      <div id="manualBox" class="hidden">
       <label data-ar="طريقة الدفع" data-en="Payment method"></label>
       <select id="method"><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select>
       <label data-ar="رقم العملية أو الرقم اللي حوّلت منه" data-en="Transaction ID or the number you paid from"></label>
       <input id="ref" class="ltr" maxlength="120">
-      <label data-ar="صورة الإيصال (اختياري بس بيسرّع المراجعة)" data-en="Receipt screenshot (optional, speeds up review)"></label>
+      <label data-ar="صورة الإيصال" data-en="Receipt screenshot"></label>
       <input id="receipt" type="file" accept="image/png,image/jpeg,image/webp,application/pdf">
       <button class="btn primary" id="submitPay" style="margin-top:14px" data-ar="ابعت للمراجعة" data-en="Submit for review"></button>
       <div class="msg" id="payMsg"></div>
+      </div>
 
       <h3 data-ar="طلباتك" data-en="Your submissions"></h3>
       <table><thead><tr><th data-ar="التاريخ" data-en="Date"></th><th data-ar="الطريقة" data-en="Method"></th><th data-ar="المرجع" data-en="Reference"></th><th data-ar="الحالة" data-en="Status"></th></tr></thead>
@@ -104,10 +122,8 @@ initLang();
 const params = new URLSearchParams(location.search);
 const presetEmail = params.get('email') || '';
 const S = await getSettings();
-$('#egp').textContent = $('#egp2').textContent = S.price_egp || '100';
+$('#egp').textContent = S.price_egp || '100';
 $('#usd').textContent = S.price_usd || '9';
-$('#insta').textContent = S.instapay_handle || '—'; if (!S.instapay_handle) $('#instaRow').classList.add('hidden');
-$('#voda').textContent = S.vodafone_cash_number || '—'; if (!S.vodafone_cash_number) $('#vodaRow').classList.add('hidden');
 if (S.support_email) $('#support').innerHTML = `<a href="mailto:${esc(S.support_email)}">${esc(S.support_email)}</a>`;
 if (S.creem_checkout_url) $('#usdBtn').href = S.creem_checkout_url;
 else { $('#usdBtn').removeAttribute('href'); $('#usdBtn').onclick = () => alert(t('الدفع بالدولار هيتفتح قريب', 'USD checkout is coming soon')); }
@@ -140,6 +156,47 @@ if (params.has('email') || location.hash === '#egp') {
   const { data: { session } } = await sb.auth.getSession();
   if (session || location.hash === '#egp') openEgp();
 }
+
+// ---------- Automatic wallet payment ----------
+$('#showManual').onclick = (e) => { e.preventDefault(); $('#manualBox').classList.toggle('hidden'); };
+let pollTimer = null;
+function waitForLicense(until) {
+  clearInterval(pollTimer);
+  const w = $('#aWait');
+  msg(w, t('⏳ مستنيين التحويل… الصفحة دي هتتحدّث لوحدها أول ما يوصل.', '⏳ Waiting for your transfer… this page updates by itself when it arrives.'));
+  pollTimer = setInterval(async () => {
+    const { data: lic } = await sb.rpc('my_license');
+    if (lic?.[0]?.active) {
+      clearInterval(pollTimer);
+      msg(w, t('✓ وصل! النسخة الكاملة اتفعّلت. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة».', '✓ Received! The full version is active. Open the extension and tap “Refresh status”.'), 'ok');
+      $('#licensedNote').classList.remove('hidden'); loadMine();
+    } else if (Date.now() > until) {
+      clearInterval(pollTimer);
+      msg(w, t('الطلب ده انتهى. لو حوّلت فعلًا ابعت الإيصال من اللينك تحت، أو اطلب مبلغ جديد.', 'This request expired. If you already paid, send the receipt with the link below, or get a new amount.'), 'err');
+    }
+  }, 5000);
+}
+$('#aPhone').value = localStorage.getItem('mm-mobile') || '';
+$('#aStart').onclick = async () => {
+  const m = $('#aMsg');
+  const phone = $('#aPhone').value.replace(/\D/g, '').replace(/^20(?=1)/, '0');
+  if (!/^01[0125]\d{8}$/.test(phone)) return msg(m, t('اكتب رقم مصري صحيح (11 رقم)', 'Enter a valid Egyptian number (11 digits)'), 'err');
+  localStorage.setItem('mm-mobile', phone);
+  $('#aStart').disabled = true; msg(m, '');
+  const { data, error } = await sb.rpc('start_wallet_payment', { p_method: $('#aMethod').value, p_phone: phone });
+  $('#aStart').disabled = false;
+  if (error) {
+    if (/already_licensed/.test(error.message)) { $('#licensedNote').classList.remove('hidden'); return; }
+    return msg(m, error.message, 'err');
+  }
+  const r = data[0];
+  $('#aAmount').textContent = Number(r.amount).toFixed(2);
+  $('#aTo').textContent = r.pay_to || S.wallet_number || S.instapay_handle || '';
+  $('#aPay').classList.remove('hidden');
+  $('#aPay').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  waitForLicense(new Date(r.expires_at).getTime());
+  loadMine();
+};
 
 $('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
 
