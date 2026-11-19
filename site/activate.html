@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music Mute — تفعيل / Activate</title>
+<link rel="icon" href="/assets/icon128.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav><a class="brand" href="/"><img src="/assets/icon128.png" alt="">Music Mute</a><div class="links"><button class="lang" id="langBtn"></button></div></nav>
+  <div class="card" style="max-width:620px;margin:40px auto">
+    <h1 style="margin-top:0" data-ar="تفعيل بمفتاح الرخصة" data-en="Activate with your license key"></h1>
+    <p class="muted" data-ar="اشتريت من Gumroad بإيميل غير اللي بتستخدمه في الإضافة؟ سجّل دخول بإيميل الإضافة، واكتب مفتاح الرخصة اللي وصلك من Gumroad." data-en="Bought on Gumroad with a different email than the one you use in the extension? Sign in with your extension email and enter the license key from your Gumroad receipt."></p>
+    <div id="loginBox"></div>
+    <div id="keyBox" class="hidden">
+      <p class="muted"><span data-ar="داخل بـ" data-en="Signed in as"></span> <b id="who" style="direction:ltr;display:inline-block"></b> · <a href="#" id="signOut" data-ar="خروج" data-en="Sign out"></a></p>
+      <label data-ar="مفتاح الرخصة" data-en="License key"></label>
+      <input id="key" class="ltr" maxlength="40" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX">
+      <button class="btn primary" id="go" style="margin-top:14px" data-ar="فعّل" data-en="Activate"></button>
+      <div class="msg" id="m"></div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { sb, $, t, initLang, msg, mountLogin } from '/assets/app.js';
+initLang();
+function signedIn(session) {
+  $('#loginBox').classList.add('hidden'); $('#keyBox').classList.remove('hidden');
+  $('#who').textContent = session.user.email;
+}
+const { data: { session } } = await sb.auth.getSession();
+if (session) signedIn(session); else mountLogin($('#loginBox'), signedIn, new URLSearchParams(location.search).get('email') || '');
+$('#signOut').onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+$('#go').onclick = async () => {
+  const key = $('#key').value.trim();
+  $('#go').disabled = true; msg($('#m'), t('بنتأكد…', 'Checking…'));
+  const { error } = await sb.functions.invoke('gumroad-activate', { body: { key } });
+  $('#go').disabled = false;
+  if (error) {
+    let d = ''; try { d = (await error.context.json()).error; } catch {}
+    return msg($('#m'), d || error.message, 'err');
+  }
+  msg($('#m'), t('✓ اتفعّلت! افتح الإضافة واضغط «اشتريت؟ حدّث الحالة».', '✓ Activated! Open the extension and tap “Refresh status”.'), 'ok');
+};
+</script>
+</body>
+</html>
