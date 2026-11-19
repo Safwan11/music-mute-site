@@ -10,6 +10,8 @@ export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
 // ---- i18n: elements carry data-ar / data-en (text) and data-ar-ph / data-en-ph (placeholder)
+const urlLang = new URLSearchParams(location.search).get('lang');
+if (urlLang === 'ar' || urlLang === 'en') localStorage.setItem('mm-lang', urlLang);
 export let lang = localStorage.getItem('mm-lang') || (navigator.language?.startsWith('ar') ? 'ar' : 'en');
 export const t = (ar, en) => (lang === 'ar' ? ar : en);
 export function applyLang() {

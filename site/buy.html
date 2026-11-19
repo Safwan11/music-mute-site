@@ -15,8 +15,8 @@
   </nav>
 
   <h1 data-ar="النسخة الكاملة — مدى الحياة" data-en="Full version — lifetime"></h1>
-  <p class="muted" data-ar="ادفع مرة واحدة. بعد الدفع افتح الإضافة وسجّل دخول بنفس الإيميل وهتتفعّل تلقائي."
-     data-en="Pay once. Then open the extension, sign in with the same email, and it unlocks automatically."></p>
+  <p class="muted" data-ar="ادفع مرة واحدة. بعد الدفع افتح الإضافة واكتب نفس الإيميل واضغط «تحقّق من الدفع» — من غير أي كود."
+     data-en="Pay once. Then open the extension, enter the same email and tap “Check my purchase” — no code needed."></p>
 
   <div class="price">
     <div class="card">
@@ -37,7 +37,7 @@
       <div class="amount">$<span id="usd">9</span> <small>USD</small></div>
       <p data-ar="بالكارت أو PayPal عن طريق Gumroad — بيتفعّل فورًا بعد الدفع." data-en="Card or PayPal via Gumroad — unlocks instantly after payment."></p>
       <a class="btn gold" id="usdBtn" style="margin-top:14px" target="_blank" rel="noopener" data-ar="ادفع بالدولار" data-en="Pay in USD"></a>
-        <p class="muted" style="font-size:13px;margin-top:10px" data-ar="⚠️ ادفع بنفس الإيميل اللي هتسجّل بيه في الإضافة. دفعت بإيميل تاني؟ <a href='/activate'>فعّل بمفتاح الرخصة</a>" data-en="⚠️ Pay with the same email you’ll use in the extension. Used another email? <a href='/activate'>Activate with your license key</a>"></p>
+        <p class="muted" style="font-size:13px;margin-top:10px" data-ar="⚠️ ادفع بنفس الإيميل اللي هتكتبه في الإضافة. دفعت بإيميل تاني؟ <a href='/activate'>فعّل بمفتاح الرخصة</a>" data-en="⚠️ Pay with the same email you’ll enter in the extension. Used another email? <a href='/activate'>Activate with your license key</a>"></p>
     </div>
   </div>
 
@@ -48,7 +48,7 @@
     <div id="ekPayBox" class="hidden">
       <p class="muted"><span data-ar="الرخصة هتتفعّل على" data-en="The license will be activated for"></span> <b id="ekWho" style="direction:ltr;display:inline-block"></b>
         · <a href="#" id="ekSignOut" data-ar="إيميل تاني؟" data-en="Different email?"></a></p>
-      <div id="ekLicensed" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده بالفعل. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة»." data-en="✓ This email already has the full version. Open the extension and tap “Refresh status”."></div>
+      <div id="ekLicensed" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده بالفعل. افتح الإضافة واضغط «تحقّق من الدفع»." data-en="✓ This email already has the full version. Open the extension and tap “Check my purchase”."></div>
       <div id="ekForm">
         <label data-ar="الاسم" data-en="Name"></label>
         <input id="ekName" maxlength="80" autocomplete="name">
@@ -69,7 +69,7 @@
     <div id="payBox" class="hidden">
       <p class="muted"><span data-ar="داخل بـ" data-en="Signed in as"></span> <b id="who" style="direction:ltr;display:inline-block"></b>
         · <a href="#" id="signOut" data-ar="خروج" data-en="Sign out"></a></p>
-      <div id="licensedNote" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة»." data-en="✓ This email already has the full version. Open the extension and tap “Refresh status”."></div>
+      <div id="licensedNote" class="msg ok hidden" data-ar="✓ النسخة الكاملة متفعّلة على الإيميل ده. افتح الإضافة واضغط «تحقّق من الدفع»." data-en="✓ This email already has the full version. Open the extension and tap “Check my purchase”."></div>
 
       <div id="autoBox">
         <ol class="steps">
@@ -170,7 +170,7 @@ function waitForLicense(until) {
     const { data: lic } = await sb.rpc('my_license');
     if (lic?.[0]?.active) {
       clearInterval(pollTimer);
-      msg(w, t('✓ وصل! النسخة الكاملة اتفعّلت. افتح الإضافة واضغط «اشتريت؟ حدّث الحالة».', '✓ Received! The full version is active. Open the extension and tap “Refresh status”.'), 'ok');
+      msg(w, t('✓ وصل! النسخة الكاملة اتفعّلت. افتح الإضافة واضغط «تحقّق من الدفع».', '✓ Received! The full version is active. Open the extension and tap “Check my purchase”.'), 'ok');
       $('#licensedNote').classList.remove('hidden'); loadMine();
     } else if (Date.now() > until) {
       clearInterval(pollTimer);

@@ -42,7 +42,7 @@ $('#go').onclick = async () => {
     let d = ''; try { d = (await error.context.json()).error; } catch {}
     return msg($('#m'), d || error.message, 'err');
   }
-  msg($('#m'), t('✓ اتفعّلت! افتح الإضافة واضغط «اشتريت؟ حدّث الحالة».', '✓ Activated! Open the extension and tap “Refresh status”.'), 'ok');
+  msg($('#m'), t('✓ اتفعّلت! افتح الإضافة واضغط «تحقّق من الدفع».', '✓ Activated! Open the extension and tap “Check my purchase”.'), 'ok');
 };
 </script>
 </body>
