@@ -8,9 +8,10 @@
 //           WALLET_SMS_SENDERS (optional, comma list of allowed sender IDs, e.g. "VF-Cash,InstaPay,CIB")
 // Deploy with "Verify JWT" OFF.
 //
-// Matching rules (first wins), only against open auto requests (pending, not expired):
-//   1. amount == the unique amount we gave the buyer (e.g. 100.37)
-//   2. sender number in the SMS == the number the buyer said he pays from, and amount >= price
+// Matching (only open auto requests: pending, not expired), amount must be >= price (100 EGP):
+//   1. sender NAME in the SMS matches the name the buyer typed (InstaPay bank SMS show the name)
+//   2. sender NUMBER in the SMS == the number the buyer said he pays from (wallet SMS show the number)
+// If 0 or 2+ requests match, nothing is granted and the SMS is logged as unmatched_credit.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const enc = new TextEncoder();
@@ -30,22 +31,36 @@ const normDigits = (s: string) =>
    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06F0))
    .replace(/٫/g, ".").replace(/٬/g, ",");
 
-const CREDIT = /(استلام|استلمت|تم استلام|إيداع|ايداع|اضافة|إضافة|أضيف|اضيف|وارد|تحويل وارد|received|credited|credit|deposit|incoming)/i;
-const DEBIT = /(خصم|سحب|تم تحويل مبلغ .{0,40}(إلى|الى)|debited|withdraw|you sent|sent to|purchase|شراء)/i;
+const CREDIT = /(استلام|استلمت|تم استلام|إيداع|ايداع|اضافة|إضافة|أضيف|اضيف|وارد|تحويل وارد|(إلى|الى|ل)\s*حسابك|لحسابك|received|credited|credit|deposit|incoming|to your account)/i;
+const DEBIT = /(خصم|سحب|من حسابك|تم تحويل مبلغ .{0,40}(إلى|الى)|debited|withdraw|you sent|sent to|from your account|purchase|شراء)/i;
 
 export function parseSms(raw: string) {
   const text = normDigits(raw).replace(/\s+/g, " ");
   const amounts: number[] = [];
-  const re = /(?:(?:EGP|LE|L\.E|ج\.م|جنيه|جنية|مبلغ|بمبلغ|amount|of)\s*:?\s*)(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)|(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\s*(?:EGP|LE|L\.E|ج\.م|جنيه|جنية|جم)/gi;
+  const re = /(?:(?:EGP|LE|L\.E|ج\.م|جنيه|جنية|مبلغ|بمبلغ|amount|of)\s*:?\s*)((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)|((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)\s*(?:EGP|LE|L\.E|ج\.م|جنيه|جنية|جم)/gi;
   for (const m of text.matchAll(re)) {
     const v = Number((m[1] ?? m[2]).replace(/,/g, ""));
     if (v > 0 && v < 100000) amounts.push(v);
   }
   const phones = [...text.matchAll(/(?:\+?2)?(01[0125]\d{8})/g)].map((m) => m[1]);
-  return { text, amounts, phones, credit: CREDIT.test(text) && !DEBIT.test(text) };
+  // Sender name: "... من ABDELRAHMAN ASHRAF برقم مرجعي ..." / "... from AHMED ALI via InstaPay"
+  const nm = text.match(/(?:^|\s)من\s+(?!حسابك|رقم)([A-Za-z\u0621-\u064A][A-Za-z\u0621-\u064A .'-]{1,60}?)(?:\s+(?=برقم|بتاريخ|رقم|بمرجع|عبر|على|في|للمزيد)|\s*[.,،]|\s*$)/)
+    ?? text.match(/\bfrom\s+(?!your\b)([A-Za-z][A-Za-z .'-]{1,60}?)\s*(?=\bvia\b|\bref|\bon\b|\.|,|$)/i);
+  const name = nm ? nm[1].trim() : "";
+  return { text, amounts, phones, name, credit: CREDIT.test(text) && !DEBIT.test(text) };
 }
 
-if (import.meta.main) Deno.serve(async (req) => {
+// Compare names loosely: every word the buyer typed (first two words at least) must appear in the SMS name.
+export function nameMatches(buyer: string, sms: string) {
+  const norm = (x: string) => x.toUpperCase()
+    .replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
+    .replace(/[^A-Z\u0621-\u064A ]/g, " ").split(/\s+/).filter((w) => w.length > 1);
+  const b = norm(buyer).slice(0, 3), m = norm(sms);
+  if (b.length < 2 || !m.length) return false;
+  return b.every((w) => m.includes(w));
+}
+
+Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   const url = new URL(req.url);
   const token = Deno.env.get("WALLET_SMS_TOKEN") ?? "";
@@ -81,7 +96,7 @@ if (import.meta.main) Deno.serve(async (req) => {
   const id = `sms:${await sha(from + "|" + body)}`;
   const { error: dupErr } = await db.from("webhook_events").insert({
     id, provider: "wallet-sms", event_type: p.credit ? "credit" : "other", email: null,
-    payload: { from, body, amounts: p.amounts, phones: p.phones, senderOk },
+    payload: { from, body, amounts: p.amounts, phones: p.phones, name: p.name, senderOk },
   });
   if (dupErr?.code === "23505") return new Response("ok (duplicate)");
   if (!senderOk || !p.credit || !p.amounts.length) return new Response("ok (ignored)");
@@ -94,14 +109,16 @@ if (import.meta.main) Deno.serve(async (req) => {
   const shop = (Deno.env.get("WALLET_NUMBER") ?? "01044855081");
   const payerPhones = p.phones.filter((x) => x !== shop);
 
-  let match = (open ?? []).find((o) => p.amounts.some((a) => Math.abs(a - Number(o.expected_amount)) < 0.005));
-  let rule = "amount";
-  if (!match && payerPhones.length) {
-    const cands = (open ?? []).filter((o) => payerPhones.includes(o.payer_phone) && p.amounts.some((a) => a >= price - 0.005));
-    if (cands.length === 1) { match = cands[0]; rule = "phone"; }
+  const paid = Math.max(...p.amounts);
+  let match = null as any, rule = "";
+  if (paid >= price - 0.005) {
+    const byName = p.name ? (open ?? []).filter((o) => o.payer_name && nameMatches(o.payer_name, p.name)) : [];
+    const byPhone = payerPhones.length ? (open ?? []).filter((o) => payerPhones.includes(o.payer_phone)) : [];
+    if (byName.length === 1) { match = byName[0]; rule = "name"; }
+    else if (byPhone.length === 1) { match = byPhone[0]; rule = "phone"; }
   }
   if (!match) {
-    await db.from("audit_log").insert({ actor: "wallet-sms", action: "unmatched_credit", target: from, details: { amounts: p.amounts, phones: payerPhones, sms: id } });
+    await db.from("audit_log").insert({ actor: "wallet-sms", action: "unmatched_credit", target: from, details: { amounts: p.amounts, phones: payerPhones, name: p.name, sms: id } });
     return new Response("ok (no match)");
   }
 

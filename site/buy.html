@@ -73,15 +73,17 @@
 
       <div id="autoBox">
         <ol class="steps">
-          <li data-ar="اختار هتدفع منين واكتب الرقم اللي هتحوّل منه." data-en="Choose how you’ll pay and enter the number you’ll pay from."></li>
-          <li data-ar="هنديك مبلغ مخصوص ليك (زي 100.37) — حوّله بالظبط." data-en="We give you a unique amount (like 100.37) — send exactly that."></li>
+          <li data-ar="اكتب اسمك زي ما بيظهر في إنستاباي (أو رقم فودافون كاش اللي هتحوّل منه)." data-en="Enter your name as it appears in InstaPay (or the Vodafone Cash number you’ll pay from)."></li>
+          <li data-ar="حوّل 100 جنيه على الرقم اللي هيظهرلك." data-en="Send 100 EGP to the number shown."></li>
           <li data-ar="أول ما الفلوس توصل، النسخة الكاملة بتتفعّل لوحدها خلال دقيقة." data-en="As soon as the money arrives, the full version unlocks by itself within a minute."></li>
         </ol>
         <label data-ar="هتدفع بـ" data-en="Pay with"></label>
         <select id="aMethod"><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select>
-        <label data-ar="الرقم اللي هتحوّل منه (11 رقم)" data-en="The number you’ll pay from (11 digits)"></label>
+        <label data-ar="اسمك زي ما بيظهر في إنستاباي (أول اسمين على الأقل، بالإنجليزي)" data-en="Your name as shown in InstaPay (at least first two names)"></label>
+        <input id="aName" class="ltr" maxlength="60" placeholder="AHMED MOHAMED">
+        <label data-ar="رقم الموبايل اللي هتحوّل منه (مطلوب لفودافون كاش)" data-en="Mobile number you’ll pay from (required for Vodafone Cash)"></label>
         <input id="aPhone" class="ltr" inputmode="numeric" maxlength="13" placeholder="01xxxxxxxxx">
-        <button class="btn primary" id="aStart" style="margin-top:14px" data-ar="اعرف المبلغ" data-en="Get my amount"></button>
+        <button class="btn primary" id="aStart" style="margin-top:14px" data-ar="ابدأ الدفع" data-en="Start payment"></button>
         <div class="msg" id="aMsg"></div>
 
         <div id="aPay" class="hidden" style="margin-top:16px">
@@ -89,7 +91,7 @@
             <div data-ar="حوّل بالظبط" data-en="Send exactly"></div>
             <div style="font-size:40px;font-weight:800;direction:ltr" id="aAmount"></div>
             <div><span data-ar="جنيه على" data-en="EGP to"></span> <b style="direction:ltr;display:inline-block;font-size:20px" id="aTo"></b></div>
-            <div class="muted" style="font-size:13px;margin-top:6px" data-ar="InstaPay أو Vodafone Cash — نفس الرقم. لازم القروش تبقى زي ما هي عشان نعرف إنه إنت." data-en="InstaPay or Vodafone Cash — same number. Keep the piasters exact so we know it’s you."></div>
+            <div class="muted" style="font-size:13px;margin-top:6px" data-ar="InstaPay أو Vodafone Cash — نفس الرقم. حوّل من الحساب اللي باسمك اللي كتبته." data-en="InstaPay or Vodafone Cash — same number. Pay from the account in the name you entered."></div>
           </div>
           <div class="msg" id="aWait"></div>
         </div>
@@ -177,20 +179,24 @@ function waitForLicense(until) {
   }, 5000);
 }
 $('#aPhone').value = localStorage.getItem('mm-mobile') || '';
+$('#aName').value = localStorage.getItem('mm-payname') || '';
 $('#aStart').onclick = async () => {
   const m = $('#aMsg');
   const phone = $('#aPhone').value.replace(/\D/g, '').replace(/^20(?=1)/, '0');
-  if (!/^01[0125]\d{8}$/.test(phone)) return msg(m, t('اكتب رقم مصري صحيح (11 رقم)', 'Enter a valid Egyptian number (11 digits)'), 'err');
-  localStorage.setItem('mm-mobile', phone);
+  const name = $('#aName').value.trim().replace(/\s+/g, ' ');
+  if (name.split(' ').length < 2) return msg(m, t('اكتب أول اسمين على الأقل زي ما بيظهروا في إنستاباي', 'Enter at least your first two names as they appear in InstaPay'), 'err');
+  if (phone && !/^01[0125]\d{8}$/.test(phone)) return msg(m, t('اكتب رقم مصري صحيح (11 رقم)', 'Enter a valid Egyptian number (11 digits)'), 'err');
+  if ($('#aMethod').value === 'vodafone_cash' && !phone) return msg(m, t('اكتب رقم فودافون كاش اللي هتحوّل منه', 'Enter the Vodafone Cash number you’ll pay from'), 'err');
+  localStorage.setItem('mm-mobile', phone); localStorage.setItem('mm-payname', name);
   $('#aStart').disabled = true; msg(m, '');
-  const { data, error } = await sb.rpc('start_wallet_payment', { p_method: $('#aMethod').value, p_phone: phone });
+  const { data, error } = await sb.rpc('start_wallet_payment', { p_method: $('#aMethod').value, p_name: name, p_phone: phone || null });
   $('#aStart').disabled = false;
   if (error) {
     if (/already_licensed/.test(error.message)) { $('#licensedNote').classList.remove('hidden'); return; }
     return msg(m, error.message, 'err');
   }
   const r = data[0];
-  $('#aAmount').textContent = Number(r.amount).toFixed(2);
+  $('#aAmount').textContent = Number(r.amount).toFixed(0);
   $('#aTo').textContent = r.pay_to || S.wallet_number || S.instapay_handle || '';
   $('#aPay').classList.remove('hidden');
   $('#aPay').scrollIntoView({ behavior: 'smooth', block: 'center' });
