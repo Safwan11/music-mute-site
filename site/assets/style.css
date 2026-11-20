@@ -11,7 +11,7 @@ nav .links a{color:var(--muted);text-decoration:none;font-size:14px}
 .lang{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:20px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
 .hero{text-align:center;padding:60px 0 40px}
 .hero h1{font-size:clamp(30px,5vw,52px);line-height:1.2;margin:0 0 14px}
-.hero h1 span{background:linear-gradient(90deg,var(--green2),#7be3ac);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h1 span{color:#5fd99a}
 .hero p{color:var(--muted);font-size:18px;max-width:640px;margin:0 auto 26px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:13px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-decoration:none;transition:.15s}
 .btn.primary{background:var(--green);color:#fff}.btn.primary:hover{background:var(--green2)}
