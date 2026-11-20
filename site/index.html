@@ -222,7 +222,7 @@
   <section class="s" id="contact" style="text-align:center">
     <h2 data-ar="محتاج مساعدة؟" data-en="Need help?"></h2>
     <p class="muted" data-ar="ابعتلنا وهنرد عليك." data-en="Write to us and we'll get back to you."></p>
-    <p id="support"></p>
+    <p id="support"><a href="mailto:muslimtecheg@gmail.com">muslimtecheg@gmail.com</a></p>
   </section>
 
   <footer>
@@ -246,7 +246,7 @@
   if (CHROME_STORE_URL) { $('#getBtn').href = CHROME_STORE_URL; $('#getBtn2').href = CHROME_STORE_URL; }
   const S = await getSettings().catch(() => ({}));
   if (S.support_email) $('#support').innerHTML = `<a href="mailto:${esc(S.support_email)}">${esc(S.support_email)}</a>`;
-  else $('#support').innerHTML = '<a href="https://www.facebook.com/profile.php?id=61596778611182" rel="noopener">Facebook — Muslim Tech</a>';
+  else $('#support').innerHTML = '<a href="mailto:muslimtecheg@gmail.com">muslimtecheg@gmail.com</a>';
 </script>
 </body>
 </html>
