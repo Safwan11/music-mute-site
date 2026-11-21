@@ -96,8 +96,12 @@ async function loadPayments() {
       const { data: s } = await sb.storage.from('receipts').createSignedUrl(p.receipt_path, 3600);
       if (s?.signedUrl) rc = `<a href="${s.signedUrl}" target="_blank" rel="noopener">${t('عرض', 'View')}</a>`;
     }
+    const claimed = p.claimed_at && p.status === 'pending';
     const act = p.status === 'pending'
-      ? `<button class="btn sm primary" data-ok="${p.id}">${t('قبول', 'Approve')}</button> <button class="btn sm ghost" data-no="${p.id}">${t('رفض', 'Reject')}</button>`
+      ? (claimed
+        ? `<div style="font-size:12px;margin-bottom:6px">⚡ ${t('المشتري فعّلها', 'Buyer unlocked it')} ${new Date(p.claimed_at).toLocaleString()} — ${t('شوف البنك', 'check your bank')}</div>
+           <button class="btn sm primary" data-ok="${p.id}">${t('الفلوس وصلت ✓', 'Money received ✓')}</button> <button class="btn sm ghost" data-no="${p.id}">${t('موصلتش — إلغاء', 'Not received — cancel')}</button>`
+        : `<button class="btn sm primary" data-ok="${p.id}">${t('قبول', 'Approve')}</button> <button class="btn sm ghost" data-no="${p.id}">${t('رفض', 'Reject')}</button>`)
       : `<span class="muted" style="font-size:12px">${esc(p.reviewed_by || '')}</span>`;
     return `<tr><td style="direction:ltr">${esc(p.email)}<div class="muted" style="font-size:12px">${new Date(p.created_at).toLocaleString()}</div></td>
       <td>${p.amount_egp} EGP · ${p.method === 'instapay' ? 'InstaPay' : 'Vodafone Cash'}<div style="direction:ltr">${esc(p.reference)}</div></td>
