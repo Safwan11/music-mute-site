@@ -28,7 +28,7 @@
         <p class="muted" style="font-size:13px;margin-top:10px"><a href="#" id="egpManualLink" data-ar="أو حوّل بإنستاباي / فودافون كاش" data-en="or transfer by InstaPay / Vodafone Cash"></a></p>
       </div>
       <div id="manualOffer">
-        <p data-ar="إنستاباي أو فودافون كاش — <b>بيتفعّل لوحده</b> خلال دقيقة من وصول التحويل." data-en="InstaPay or Vodafone Cash — <b>unlocks automatically</b> within a minute of your transfer arriving."></p>
+        <p data-ar="إنستاباي أو فودافون كاش — حوّل ودوس «فعّل دلوقتي» و<b>تتفعّل على طول</b>." data-en="InstaPay or Vodafone Cash — send the money, tap “unlock now”, and <b>it unlocks right away</b>."></p>
         <button class="btn primary" id="egpBtn" style="margin-top:14px" data-ar="ادفع بالجنيه" data-en="Pay in EGP"></button>
       </div>
     </div>
@@ -75,7 +75,7 @@
         <ol class="steps">
           <li data-ar="اكتب اسمك زي ما بيظهر في إنستاباي (أو رقم فودافون كاش اللي هتحوّل منه)." data-en="Enter your name as it appears in InstaPay (or the Vodafone Cash number you’ll pay from)."></li>
           <li data-ar="حوّل 100 جنيه على الرقم اللي هيظهرلك." data-en="Send 100 EGP to the number shown."></li>
-          <li data-ar="أول ما الفلوس توصل، النسخة الكاملة بتتفعّل لوحدها خلال دقيقة." data-en="As soon as the money arrives, the full version unlocks by itself within a minute."></li>
+          <li data-ar="دوس «حوّلت — فعّل دلوقتي» والنسخة الكاملة تتفعّل على طول. بنراجع كل التحويلات، ولو الفلوس موصلتش الرخصة بتتلغي." data-en="Tap “I’ve sent it — unlock now” and the full version unlocks right away. We check every transfer; if no money arrives, the licence is cancelled."></li>
         </ol>
         <label data-ar="هتدفع بـ" data-en="Pay with"></label>
         <select id="aMethod"><option value="instapay">InstaPay</option><option value="vodafone_cash">Vodafone Cash</option></select>
@@ -93,9 +93,14 @@
             <div><span data-ar="جنيه على" data-en="EGP to"></span> <b style="direction:ltr;display:inline-block;font-size:20px" id="aTo"></b></div>
             <div class="muted" style="font-size:13px;margin-top:6px" data-ar="InstaPay أو Vodafone Cash — نفس الرقم. حوّل من الحساب اللي باسمك اللي كتبته." data-en="InstaPay or Vodafone Cash — same number. Pay from the account in the name you entered."></div>
           </div>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-weight:400">
+            <input type="checkbox" id="aConfirm" style="width:auto;margin-top:4px">
+            <span data-ar="أؤكد إني حوّلت المبلغ من الحساب اللي باسمي اللي كتبته فوق." data-en="I confirm I sent the amount from the account in the name I entered above."></span>
+          </label>
+          <button class="btn gold" id="aClaim" style="margin-top:10px;width:100%" data-ar="حوّلت — فعّل دلوقتي" data-en="I’ve sent it — unlock now"></button>
           <div class="msg" id="aWait"></div>
         </div>
-        <p class="muted" style="font-size:13px;margin-top:14px"><a href="#" id="showManual" data-ar="حوّلت ومتفعّلش بعد 15 دقيقة؟ ابعت الإيصال هنا" data-en="Paid but not unlocked after 15 minutes? Send your receipt here"></a></p>
+        <p class="muted hidden" style="font-size:13px;margin-top:14px"><a href="#" id="showManual" data-ar="ابعت إيصال التحويل" data-en="Send a transfer receipt"></a></p>
       </div>
 
       <div id="manualBox" class="hidden">
@@ -161,23 +166,20 @@ if (params.has('email') || location.hash === '#egp') {
 
 // ---------- Automatic wallet payment ----------
 $('#showManual').onclick = (e) => { e.preventDefault(); $('#manualBox').classList.toggle('hidden'); };
-let pollTimer = null;
-function waitForLicense(until) {
-  clearInterval(pollTimer);
+let currentReq = null;
+$('#aClaim').onclick = async () => {
   const w = $('#aWait');
-  msg(w, t('⏳ مستنيين التحويل… الصفحة دي هتتحدّث لوحدها أول ما يوصل.', '⏳ Waiting for your transfer… this page updates by itself when it arrives.'));
-  pollTimer = setInterval(async () => {
-    const { data: lic } = await sb.rpc('my_license');
-    if (lic?.[0]?.active) {
-      clearInterval(pollTimer);
-      msg(w, t('✓ وصل! النسخة الكاملة اتفعّلت. افتح الإضافة واضغط «تحقّق من الدفع».', '✓ Received! The full version is active. Open the extension and tap “Check my purchase”.'), 'ok');
-      $('#licensedNote').classList.remove('hidden'); loadMine();
-    } else if (Date.now() > until) {
-      clearInterval(pollTimer);
-      msg(w, t('الطلب ده انتهى. لو حوّلت فعلًا ابعت الإيصال من اللينك تحت، أو اطلب مبلغ جديد.', 'This request expired. If you already paid, send the receipt with the link below, or get a new amount.'), 'err');
-    }
-  }, 5000);
-}
+  if (!currentReq) return;
+  if (!$('#aConfirm').checked) return msg(w, t('علّم على التأكيد الأول', 'Please tick the confirmation first'), 'err');
+  $('#aClaim').disabled = true;
+  const { error } = await sb.rpc('claim_wallet_payment', { p_id: currentReq });
+  $('#aClaim').disabled = false;
+  if (error) return msg(w, error.message, 'err');
+  $('#aClaim').classList.add('hidden'); $('#aConfirm').closest('label').classList.add('hidden');
+  msg(w, t('✓ اتفعّلت! افتح الإضافة ← «دفعت خلاص؟» ← اكتب نفس الإيميل ← «تحقّق من الدفع». هنراجع التحويل، ولو موصلش الرخصة بتتلغي.',
+           '✓ Unlocked! Open the extension → “Already paid?” → enter this same email → “Check my purchase”. We’ll verify the transfer; if it never arrives, the licence is cancelled.'), 'ok');
+  $('#licensedNote').classList.remove('hidden'); loadMine();
+};
 $('#aPhone').value = localStorage.getItem('mm-mobile') || '';
 $('#aName').value = localStorage.getItem('mm-payname') || '';
 $('#aStart').onclick = async () => {
@@ -200,7 +202,8 @@ $('#aStart').onclick = async () => {
   $('#aTo').textContent = r.pay_to || S.wallet_number || S.instapay_handle || '';
   $('#aPay').classList.remove('hidden');
   $('#aPay').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  waitForLicense(new Date(r.expires_at).getTime());
+  currentReq = r.id;
+  msg($('#aWait'), t('بعد ما تحوّل، علّم على التأكيد ودوس الزرار.', 'After you transfer, tick the box and tap the button.'));
   loadMine();
 };
 
